@@ -1,4 +1,4 @@
-const API_BASE = ((import.meta as any).env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE = "";
 
 export function getToken(): string | null {
   return localStorage.getItem('veriledger_token');
