@@ -7,8 +7,8 @@ const getApiBase = (): string => {
     return "http://localhost:8000";
   }
   
-  // In production (Vercel), let it use a relative path to leverage Vercel's routing rules
-  return "";
+  // In production (Vercel), point to the mapped backend service route prefix
+  return "/_/backend";
 };
 
 const API_BASE = getApiBase();
