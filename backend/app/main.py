@@ -24,6 +24,36 @@ try:
 except Exception:
     pass
 
+# Seed default users if they do not exist (ephemeral SQLite support)
+from app.database import SessionLocal
+from app.crud import get_user_by_email, create_user
+from app.schemas import UserCreate
+from app.models import User
+
+db = SessionLocal()
+try:
+    if db.query(User).count() == 0:
+        # Seed standard demo roles
+        for role in ['MAKER', 'CHECKER', 'FC', 'CFO']:
+            email = f"{role.lower()}@veriledger.com"
+            user_in = UserCreate(
+                name=f"Demo {role.capitalize()}",
+                email=email,
+                password="password123",
+                role=role
+            )
+            create_user(db, user_in)
+        # Seed Deepak's test user
+        if not get_user_by_email(db, "deepak@gmail.com"):
+            create_user(db, UserCreate(
+                name="Deepak Maker",
+                email="deepak@gmail.com",
+                password="password123",
+                role="MAKER"
+            ))
+finally:
+    db.close()
+
 app = FastAPI(title="Veriledger API", version="1.0.0")
 
 # Setup CORS for frontend communication
