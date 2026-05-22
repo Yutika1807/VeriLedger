@@ -38,12 +38,11 @@ app.add_middleware(
 # Mount local uploads folder for static retrieval of balance sheet documents
 app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# ==================== REGISTER ROUTERS ====================
-# This explicitly maps backend endpoints to match the frontend fetch paths
-app.include_router(auth.router, prefix="/api")
-app.include_router(users.router, prefix="/api")
-app.include_router(sheets.router, prefix="/api")
-app.include_router(deadlines.router, prefix="/api")
+# Register Routers
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(sheets.router)
+app.include_router(deadlines.router)
 
 @app.get("/")
 def read_root():
