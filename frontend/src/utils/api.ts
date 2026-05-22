@@ -1,4 +1,17 @@
-const API_BASE = "";
+// Dynamically determine the API base URL based on the current environment
+const getApiBase = (): string => {
+  if (typeof window === "undefined") return "";
+  
+  // If we are working locally, point to the local FastAPI port
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return "http://localhost:8000";
+  }
+  
+  // In production (Vercel), let it use a relative path to leverage Vercel's routing rules
+  return "";
+};
+
+const API_BASE = getApiBase();
 
 export function getToken(): string | null {
   return localStorage.getItem('veriledger_token');
@@ -37,6 +50,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
+  // Combine the dynamic base URL with the exact network endpoint path
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers,
@@ -45,15 +59,19 @@ async function request(endpoint: string, options: RequestInit = {}) {
   if (!response.ok) {
     let errorMsg = 'An error occurred';
     try {
-      const errorJson = await response.json();
-      errorMsg = errorJson.detail || errorMsg;
+      const text = await response.text();
+      try {
+        const errorJson = JSON.parse(text);
+        errorMsg = errorJson.detail || errorMsg;
+      } catch {
+        errorMsg = text || errorMsg;
+      }
     } catch {
-      errorMsg = await response.text() || errorMsg;
+      // Ignore text reading failure
     }
     throw new Error(errorMsg);
   }
 
-  // Handle file uploads static responses or empty states appropriately
   if (response.status === 204) {
     return null;
   }
@@ -90,7 +108,6 @@ export const api = {
   async createSheet(formData: FormData) {
     return request('/api/sheets', {
       method: 'POST',
-      // Fetch will automatically add multipart/form-data boundary
       body: formData,
     });
   },
